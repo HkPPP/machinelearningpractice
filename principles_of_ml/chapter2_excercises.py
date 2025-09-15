@@ -38,7 +38,7 @@ from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint
 
 import numpy as np
-import utils
+import principles_of_ml.utils as utils
 
 RANDOM_SEED = 42
 

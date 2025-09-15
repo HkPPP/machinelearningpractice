@@ -37,7 +37,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.dummy import DummyClassifier
 import numpy as np
 
-import utils
+import principles_of_ml.utils as utils
 
 
 class MINSTransformer():
