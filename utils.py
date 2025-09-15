@@ -12,6 +12,8 @@ from sklearn.pipeline import make_pipeline
 
 from sklearn.cluster import KMeans
 
+from pathlib import Path
+
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import FunctionTransformer
@@ -33,6 +35,10 @@ from sklearn.model_selection import cross_val_score
 
 
 import numpy as np
+
+IMAGES_PATH = Path() / "images" / "classification"
+IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+RANDOM_SEED = 42
 
 def load_housing_data():
     tarball_path = Path("datasets/housing.tgz")
@@ -61,3 +67,13 @@ class ClusterSimilarity(BaseEstimator, TransformerMixin):
 
     def get_feature_names_out(self, names=None):
         return [f"Cluster {i} similarity" for i in range(self.n_clusters)]
+
+
+
+
+
+def save_fig(fig_id, tight_layout=True, fig_extension="png", resolution=300):
+    path = IMAGES_PATH / f"{fig_id}.{fig_extension}"
+    if tight_layout:
+        plt.tight_layout()
+    plt.savefig(path, format=fig_extension, dpi=resolution)
