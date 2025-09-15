@@ -342,7 +342,6 @@ if __name__ == "__main__":
 
     ############################### Problem 3 ###############################
     from sklearn.feature_selection import SelectFromModel
-    from sklearn.linear_model import LogisticRegression
     from sklearn.svm import SVR
     from scipy.stats import loguniform, expon
 

@@ -88,6 +88,13 @@ if __name__ == "__main__":
     # result is above 95%
     print(f"Cross validation score: {cross_val_score(sgd_clf, X_train, y_train_5, cv=3, scoring='accuracy')}")
 
+    # Training using dummy classifier 
+    # A dummy clf is a clf that classifies data through basic rules instead of learning from data
+    # - most_frequent: Predicts the most frequent label, useful for imbalanced datasets.
+    # - stratified: Randomly predicts labels based on their distribution in the training data, preserving class percentages.
+    # - uniform: Randomly selects a class with equal probability.
+    # - constant: Always predicts the same label, which can be specified for fixed output scenarios.
+    # Source: https://www.geeksforgeeks.org/machine-learning/ml-dummy-classifiers-using-sklearn/ 
     dummy_clf = DummyClassifier()
     dummy_clf.fit(X_train, y_train_5)
     print(f"Dummy prediction = {any(dummy_clf.predict([some_digit]))}")
