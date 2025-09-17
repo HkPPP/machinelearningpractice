@@ -33,13 +33,24 @@ from sklearn.ensemble import RandomForestRegressor
 
 from sklearn.model_selection import cross_val_score
 
+import joblib
 
 import numpy as np
 
 IMAGES_PATH = Path() / "images" / "classification"
 IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+
+MODEL_PATH = Path() / "models"
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
 RANDOM_SEED = 42
 
+def load_model(model_name):
+    return joblib.load(MODEL_PATH / f"{model_name}.joblib")
+
+def dump_model(model, model_name):
+    joblib.dump(model, MODEL_PATH / f"{model_name}.joblib") 
+    
 def load_housing_data():
     tarball_path = Path("datasets/housing.tgz")
     if not tarball_path.is_file():
