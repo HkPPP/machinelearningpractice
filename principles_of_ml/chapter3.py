@@ -37,7 +37,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.dummy import DummyClassifier
 import numpy as np
 
-import principles_of_ml.utils as utils
+import utils as utils
 
 
 class MINSTransformer():
@@ -98,3 +98,11 @@ if __name__ == "__main__":
     dummy_clf = DummyClassifier()
     dummy_clf.fit(X_train, y_train_5)
     print(f"Dummy prediction = {any(dummy_clf.predict([some_digit]))}")
+
+
+    y_train_pred = cross_val_score(sgd_clf, X_train, y_train_5, cv=3)
+    print(f"Cross validation score (without accuracy scoring): {y_train_pred}")
+    
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(y_train_pred, y_train_5)
+    print(f"Confusion matrix: {cm}")
