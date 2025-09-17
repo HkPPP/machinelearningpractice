@@ -141,7 +141,10 @@ if __name__ == "__main__":
                         True Positive: {cm[1][1]} \n"
     )
 
+    # Precision is the ratio of true positives to the sum of true positives and false positives
+    # Recall is the ratio of true positives to the sum of true positives and false negatives
+    # Precision is good in cases where you want to minimize false positives
+    # Recall is good when you don't want to take chances and 
     from sklearn.metrics import precision_score, recall_score
-
     print(f"Precision: {precision_score(y_train_5, y_train_pred)}")
     print(f"Recall: {recall_score(y_train_5, y_train_pred)}")
