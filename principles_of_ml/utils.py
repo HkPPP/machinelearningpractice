@@ -43,6 +43,9 @@ IMAGES_PATH.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = Path() / "models"
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 
+DATASETS_PATH = Path() / "datasets"
+DATASETS_PATH.mkdir(parents=True, exist_ok=True)
+
 RANDOM_SEED = 42
 
 def load_model(model_name):
@@ -50,6 +53,18 @@ def load_model(model_name):
 
 def dump_model(model, model_name):
     joblib.dump(model, MODEL_PATH / f"{model_name}.joblib") 
+
+def load_npy(dt_name):
+    return joblib.load(DATASETS_PATH / f"{dt_name}.npy")
+
+def load_npz(dt_name):
+    return joblib.load(DATASETS_PATH / f"{dt_name}.npz")
+
+def dump_npy(model, dt_name):
+    joblib.dump(model, DATASETS_PATH / f"{dt_name}.npy") 
+
+def dump_npz(model, dt_name):
+    joblib.dump(model, DATASETS_PATH / f"{dt_name}.npz") 
     
 def load_housing_data():
     tarball_path = Path("datasets/housing.tgz")

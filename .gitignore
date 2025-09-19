@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+principles_of_ml/models/
+principles_of_ml/datasets/

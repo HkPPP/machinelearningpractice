@@ -41,7 +41,9 @@ import utils as utils
 
 SGD_MODEL_NAME = "sgd_clf_minst"
 DUMMY_MODEL_NAME = "dummy_clf_minst"
-
+SVM_MODEL_NAME = "svm_clf_minst"
+OVR_MODEL_NAME = "ovr_clf_minst"
+SDG_MULTI_MODEL_NAME = "sgd_multi_clf_minst"
 
 class MINSTransformer:
     def __init__(self):
@@ -148,3 +150,44 @@ if __name__ == "__main__":
     from sklearn.metrics import precision_score, recall_score
     print(f"Precision: {precision_score(y_train_5, y_train_pred)}")
     print(f"Recall: {recall_score(y_train_5, y_train_pred)}")
+
+    from sklearn.svm import SVC
+    try:
+        print(f"Loading model {SVM_MODEL_NAME}")
+        svm_clf = utils.load_model(SVM_MODEL_NAME)
+    except FileNotFoundError:
+        print("Model {SVM_MODEL_NAME} not found. Fitting on all numbers") 
+        svm_clf = SVC(random_state=utils.RANDOM_SEED)
+        svm_clf.fit(X_train[:5000], y_train[:5000])
+        utils.dump_model(svm_clf, SVM_MODEL_NAME)
+    some_digit_scores = svm_clf.decision_function([some_digit])
+    print(f"Predicting on 5: {svm_clf.predict([some_digit])}") 
+    print(f"Training scores: {some_digit_scores.round(2)}")
+
+    from sklearn.multiclass import OneVsRestClassifier
+    try:
+        print(f"Loading model {OVR_MODEL_NAME}")
+        ovr_clf = utils.load_model(OVR_MODEL_NAME)
+    except FileNotFoundError:  
+        print("Model {OVR_MODEL_NAME} not found. Fitting on all numbers")
+        ovr_clf = OneVsRestClassifier(SVC(random_state=utils.RANDOM_SEED))
+        ovr_clf.fit(X_train[:5000], y_train[:5000])
+        utils.dump_model(ovr_clf, OVR_MODEL_NAME)
+
+    some_digit_scores = ovr_clf.decision_function([some_digit])
+    print(f"Predicting on 5: {ovr_clf.predict([some_digit])}") 
+    print(f"Training scores: {some_digit_scores.round(2)}")
+
+
+    try:
+        print("Loading model {SDG_MULTI_MODEL_NAME}")
+        sgd_clf = utils.load_model(SDG_MULTI_MODEL_NAME)
+    except FileNotFoundError:
+        print("Model {SDG_MULTI_MODEL_NAME} not found. Fitting on all numbers")
+        sgd_clf = SGDClassifier(random_state=utils.RANDOM_SEED)
+        sgd_clf.fit(X_train[:5000], y_train[:5000])
+        utils.dump_model(sgd_clf, SDG_MULTI_MODEL_NAME)
+
+    some_digit_scores = sgd_clf.decision_function([some_digit])
+    print(f"Predicting on 5: {sgd_clf.predict([some_digit])}") 
+    print(f"Training scores: {some_digit_scores.round(2)}")
