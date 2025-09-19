@@ -32,7 +32,7 @@ from sklearn.compose import make_column_selector, make_column_transformer
 from sklearn.ensemble import RandomForestRegressor
 
 from sklearn.model_selection import cross_val_score
-
+from tempfile import TemporaryFile
 import joblib
 
 import numpy as np
@@ -55,16 +55,16 @@ def dump_model(model, model_name):
     joblib.dump(model, MODEL_PATH / f"{model_name}.joblib") 
 
 def load_npy(dt_name):
-    return joblib.load(DATASETS_PATH / f"{dt_name}.npy")
+    return np.load(DATASETS_PATH / f"{dt_name}.npy", allow_pickle=True)
 
 def load_npz(dt_name):
-    return joblib.load(DATASETS_PATH / f"{dt_name}.npz")
+    return np.load(DATASETS_PATH / f"{dt_name}.npz", allow_pickle=True)
 
-def dump_npy(model, dt_name):
-    joblib.dump(model, DATASETS_PATH / f"{dt_name}.npy") 
+def dump_npy(np_arr, dt_name):
+    np.save(DATASETS_PATH / f"{dt_name}.npy", np_arr) 
 
-def dump_npz(model, dt_name):
-    joblib.dump(model, DATASETS_PATH / f"{dt_name}.npz") 
+def dump_npz(dt_name, *np_arrs):
+    np.savez(DATASETS_PATH / f"{dt_name}.npz", *np_arrs)
     
 def load_housing_data():
     tarball_path = Path("datasets/housing.tgz")
