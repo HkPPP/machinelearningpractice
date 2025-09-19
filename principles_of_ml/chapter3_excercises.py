@@ -9,7 +9,7 @@ import utils
 import numpy as np
 
 KNN_MODEL_NAME = "knn_minst_c3e"
-N_NEIGHBORS = 10
+KNN_MODEL_NAME_EXPANDED = "knn_minst_expanded_c3e"
 MNIST_784_DATASET_NAME = "mnist_784"
 SHIFTED_MNIST_784_DATASET_NAME = "shifted_mnist_784"
 
@@ -39,23 +39,19 @@ def get_shifted_images_and_labels(X, y):
     return X_expanded, y_expanded
 
 
-def excercise(X_train, y_train, X_test, y_test):
-    print(f"X_train shape: {X_train.shape}")
-    print(f"y_train shape: {y_train.shape}")
-    print(f"X_test shape: {X_test.shape}")
-    print(f"y_test shape: {y_test.shape}")
-
+def KNeighborsClf(X_train, y_train, X_test, y_test, model_name, n_neighbors = 10, weights = 'uniform'):
     try:
-        print(f"Loading model {KNN_MODEL_NAME}")
-        kn_clf = utils.load_model(KNN_MODEL_NAME)
+        print(f"Loading model {model_name}")
+        kn_clf = utils.load_model(model_name)
     except FileNotFoundError:
-        print("Model {KNN_MODEL_NAME} not found. Fitting on all numbers")
-        kn_clf = KNeighborsClassifier(n_neighbors=N_NEIGHBORS)
+        print(f"Model {model_name} not found. Fitting on all numbers")
+        kn_clf = KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights)
         kn_clf.fit(X_train, y_train)
-        utils.dump_model(kn_clf, KNN_MODEL_NAME)
+        utils.dump_model(kn_clf, model_name)
 
     print(f"Training accuracy: {kn_clf.score(X_train, y_train)}")
     print(f"Test accuracy: {kn_clf.score(X_test, y_test)}")
+    return kn_clf
 
 
 def plot_digit(image_data):
@@ -70,7 +66,7 @@ if __name__ == "__main__":
         X = minst["arr_0"]
         y = minst["arr_1"]
     except FileNotFoundError:
-        print("Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
+        print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
         minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
         X = minst.data
         y = minst.target
@@ -111,4 +107,12 @@ if __name__ == "__main__":
     print(f"X_test_expanded shape: {X_test_expanded.shape}")
     print(f"y_test_expanded shape: {y_test_expanded.shape}")
 
-    # excercise(X_train, y_train, X_test, y_test)
+    kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
+    
+    kn_clf_expanded = KNeighborsClf(
+        X_train_expanded,
+        y_train_expanded,
+        X_test_expanded,
+        y_test_expanded,
+        KNN_MODEL_NAME_EXPANDED,
+    )
