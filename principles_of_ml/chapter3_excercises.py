@@ -19,6 +19,8 @@ KNN_MODEL_NAME = "knn_minst_c3e"
 KNN_MODEL_NAME_EXPANDED = "knn_minst_expanded_c3e"
 MNIST_784_DATASET_NAME = "mnist_784"
 SHIFTED_MNIST_784_DATASET_NAME = "shifted_mnist_784"
+RAND_SEARCH_CV_MODEL_NAME = "rand_search_cv_minst_c3e"
+RSCV_BEST_MODEL_NAME = "rscv_best_minst_c3e"
 
 
 def shift_pixels(image):
@@ -69,80 +71,95 @@ def plot_digit(image_data):
 
 
 if __name__ == "__main__":
-    try:
-        print(f"Loading dataset {MNIST_784_DATASET_NAME}")
-        minst = utils.load_npz(MNIST_784_DATASET_NAME)
-        X = minst["arr_0"]
-        y = minst["arr_1"]
-    except FileNotFoundError:
-        print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
-        minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
-        X = minst.data
-        y = minst.target
-        utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
+    # try:
+    #     print(f"Loading dataset {MNIST_784_DATASET_NAME}")
+    #     minst = utils.load_npz(MNIST_784_DATASET_NAME)
+    #     X = minst["arr_0"]
+    #     y = minst["arr_1"]
+    # except FileNotFoundError:
+    #     print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
+    #     minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
+    #     X = minst.data
+    #     y = minst.target
+    #     utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
+
+    ################### TESTING #########################################################
+    print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
+    minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
+    X = minst.data
+    y = minst.target
+    ############################################################################
 
     # The MNIST dataset returned by fetch_openml() is actually already split into
     # a training set (the first 60,000 images) and a test set (the last 10,000 images)
     X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
 
-    try:
-        print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
-        data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
-        X_train_expanded = data["arr_0"]
-        y_train_expanded = data["arr_1"]
-        X_test_expanded = data["arr_2"]
-        y_test_expanded = data["arr_3"]
-    except FileNotFoundError:
-        print(
-            f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
-        )
-        X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
-        X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
-        y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
+    # try:
+    #     print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
+    #     data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
+    #     X_train_expanded = data["arr_0"]
+    #     y_train_expanded = data["arr_1"]
+    #     X_test_expanded = data["arr_2"]
+    #     y_test_expanded = data["arr_3"]
+    # except FileNotFoundError:
+    #     print(
+    #         f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
+    #     )
+    #     X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
+    #     X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
+    #     y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
 
-        X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
-        X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
-        y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
-        utils.dump_npz(
-            SHIFTED_MNIST_784_DATASET_NAME,
-            X_train_expanded,
-            y_train_expanded,
-            X_test_expanded,
-            y_test_expanded,
-        )
-
-    print(f"X_train_expanded shape: {X_train_expanded.shape}")
-    print(f"y_train_expanded shape: {y_train_expanded.shape}")
-    print(f"X_test_expanded shape: {X_test_expanded.shape}")
-    print(f"y_test_expanded shape: {y_test_expanded.shape}")
+    #     X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
+    #     X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
+    #     y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
+    #     utils.dump_npz(
+    #         SHIFTED_MNIST_784_DATASET_NAME,
+    #         X_train_expanded,
+    #         y_train_expanded,
+    #         X_test_expanded,
+    #         y_test_expanded,
+    #     )
 
     # kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
-    knn = KNeighborsClassifier()
 
-    param_grid = {
-        "n_neighbors": np.arange(1, 12),
-        "weights": ["uniform", "distance"],
-        "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
-    }
-    rand_search = RandomizedSearchCV(
-        estimator=knn,
-        param_distributions=param_grid,
-        cv=5, # Use 5-fold cross-validation
-        n_jobs=-1, 
-        scoring="accuracy", 
-        verbose=3,
-        random_state=utils.RANDOM_SEED
-    )
+    try:
+        print(f"Loading model {RSCV_BEST_MODEL_NAME}")
+        best_knn = utils.load_model(RSCV_BEST_MODEL_NAME)
+    except FileNotFoundError:
+        try:
+            print(f"Loading model {RAND_SEARCH_CV_MODEL_NAME}")
+            rand_search = utils.load_model(RAND_SEARCH_CV_MODEL_NAME)
+        except FileNotFoundError:
+            print(
+                f"Model {RAND_SEARCH_CV_MODEL_NAME} not found. Fitting on all numbers"
+            )
+            knn = KNeighborsClassifier()
 
-    print("Fitting rand_search")
-    rand_search.fit(X_train, y_train)
+            param_grid = {
+                "n_neighbors": np.arange(1, 12),
+                "weights": ["uniform", "distance"],
+                "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
+            }
+            rand_search = RandomizedSearchCV(
+                estimator=knn,
+                param_distributions=param_grid,
+                cv=5,  # Use 5-fold cross-validation
+                n_jobs=4,
+                scoring="accuracy",
+                verbose=3,
+                random_state=utils.RANDOM_SEED,
+            )
+            print("Fitting rand_search")
+            rand_search.fit(X_train, y_train)
+            utils.dump_model(rand_search, RAND_SEARCH_CV_MODEL_NAME)
+
+        best_knn = rand_search.best_estimator_
+        utils.dump_model(best_knn, RSCV_BEST_MODEL_NAME)
 
     print(f"Best hyperparameters found: {rand_search.best_params_}")
     print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
     print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
-    
-    
-    
+
     # kn_clf_expanded = KNeighborsClf(
     #     X_train_expanded,
     #     y_train_expanded,
