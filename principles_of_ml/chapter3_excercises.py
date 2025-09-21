@@ -1,6 +1,13 @@
 from sklearn.datasets import fetch_openml
 from sklearn.neighbors import KNeighborsClassifier
 
+
+from sklearn.feature_selection import SelectFromModel
+from sklearn.svm import SVR
+from scipy.stats import loguniform, expon
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from scipy.stats import randint
 import matplotlib.pyplot as plt
 
 from scipy.ndimage import shift
@@ -39,7 +46,9 @@ def get_shifted_images_and_labels(X, y):
     return X_expanded, y_expanded
 
 
-def KNeighborsClf(X_train, y_train, X_test, y_test, model_name, n_neighbors = 10, weights = 'uniform'):
+def KNeighborsClf(
+    X_train, y_train, X_test, y_test, model_name, n_neighbors=10, weights="uniform"
+):
     try:
         print(f"Loading model {model_name}")
         kn_clf = utils.load_model(model_name)
@@ -107,12 +116,37 @@ if __name__ == "__main__":
     print(f"X_test_expanded shape: {X_test_expanded.shape}")
     print(f"y_test_expanded shape: {y_test_expanded.shape}")
 
-    kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
-    
-    kn_clf_expanded = KNeighborsClf(
-        X_train_expanded,
-        y_train_expanded,
-        X_test_expanded,
-        y_test_expanded,
-        KNN_MODEL_NAME_EXPANDED,
+    # kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
+    knn = KNeighborsClassifier()
+
+    param_grid = {
+        "n_neighbors": np.arange(1, 12),
+        "weights": ["uniform", "distance"],
+        "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
+    }
+    rand_search = RandomizedSearchCV(
+        estimator=knn,
+        param_distributions=param_grid,
+        cv=5, # Use 5-fold cross-validation
+        n_jobs=-1, 
+        scoring="accuracy", 
+        verbose=3,
+        random_state=utils.RANDOM_SEED
     )
+
+    print("Fitting rand_search")
+    rand_search.fit(X_train, y_train)
+
+    print(f"Best hyperparameters found: {rand_search.best_params_}")
+    print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
+    print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
+    
+    
+    
+    # kn_clf_expanded = KNeighborsClf(
+    #     X_train_expanded,
+    #     y_train_expanded,
+    #     X_test_expanded,
+    #     y_test_expanded,
+    #     KNN_MODEL_NAME_EXPANDED,
+    # )
