@@ -21,6 +21,7 @@ MNIST_784_DATASET_NAME = "mnist_784"
 SHIFTED_MNIST_784_DATASET_NAME = "shifted_mnist_784"
 RAND_SEARCH_CV_MODEL_NAME = "rand_search_cv_minst_c3e"
 RSCV_BEST_MODEL_NAME = "rscv_best_minst_c3e"
+GSCV_BEST_MODEL_NAME = "gscv_best_minst_c3e"
 
 
 def shift_pixels(image):
@@ -122,43 +123,76 @@ if __name__ == "__main__":
 
     # kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
 
-    try:
-        print(f"Loading model {RSCV_BEST_MODEL_NAME}")
-        best_knn = utils.load_model(RSCV_BEST_MODEL_NAME)
-    except FileNotFoundError:
-        try:
-            print(f"Loading model {RAND_SEARCH_CV_MODEL_NAME}")
-            rand_search = utils.load_model(RAND_SEARCH_CV_MODEL_NAME)
-        except FileNotFoundError:
-            print(
-                f"Model {RAND_SEARCH_CV_MODEL_NAME} not found. Fitting on all numbers"
-            )
-            knn = KNeighborsClassifier()
+    # try:
+    #     print(f"Loading model {RSCV_BEST_MODEL_NAME}")
+    #     best_knn = utils.load_model(RSCV_BEST_MODEL_NAME)
+    # except FileNotFoundError:
+    #     try:
+    #         print(
+    #             f"Model {RSCV_BEST_MODEL_NAME} not found. Loading model {RAND_SEARCH_CV_MODEL_NAME}"
+    #         )
+    #         rand_search = utils.load_model(RAND_SEARCH_CV_MODEL_NAME)
+    #     except FileNotFoundError:
+    #         print(
+    #             f"Model {RAND_SEARCH_CV_MODEL_NAME} not found. Fitting on all numbers"
+    #         )
+    #         knn = KNeighborsClassifier()
 
-            param_grid = {
-                "n_neighbors": np.arange(1, 12),
+    #         param_grid = {
+    #             "n_neighbors": np.arange(2, 9),
+    #             "weights": ["uniform", "distance"],
+    #             "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
+    #         }
+    #         rand_search = RandomizedSearchCV(
+    #             estimator=knn,
+    #             param_distributions=param_grid,
+    #             cv=5,  # Use 5-fold cross-validation
+    #             n_jobs=8,
+    #             scoring="accuracy",
+    #             verbose=3,
+    #             random_state=utils.RANDOM_SEED,
+    #         )
+    #         print("Fitting rand_search")
+    #         rand_search.fit(X_train, y_train)
+    #         utils.dump_model(rand_search, RAND_SEARCH_CV_MODEL_NAME)
+
+    #     best_knn = rand_search.best_estimator_
+    #     utils.dump_model(best_knn, RSCV_BEST_MODEL_NAME)
+    # print(f"Best hyperparameters found: {rand_search.best_params_}")
+    # print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
+    # print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
+
+
+
+
+    try:
+        print(f"Loading model {GSCV_BEST_MODEL_NAME}")
+        best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
+    except FileNotFoundError:
+        print(f"Model {GSCV_BEST_MODEL_NAME} not found. Fitting on all numbers")
+        knn = KNeighborsClassifier()
+        param_grid = {
+                "n_neighbors": np.arange(2, 9),
                 "weights": ["uniform", "distance"],
                 "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
             }
-            rand_search = RandomizedSearchCV(
-                estimator=knn,
-                param_distributions=param_grid,
-                cv=5,  # Use 5-fold cross-validation
-                n_jobs=4,
-                scoring="accuracy",
-                verbose=3,
-                random_state=utils.RANDOM_SEED,
-            )
-            print("Fitting rand_search")
-            rand_search.fit(X_train, y_train)
-            utils.dump_model(rand_search, RAND_SEARCH_CV_MODEL_NAME)
+        grid_search = GridSearchCV(
+            estimator=knn,
+            param_grid=param_grid,
+            cv=5,  # Use 5-fold cross-validation
+            n_jobs=8,
+            scoring="accuracy",
+            verbose=3,
+        )
+        print("Fitting grid_search")
+        grid_search.fit(X_train, y_train)
 
-        best_knn = rand_search.best_estimator_
-        utils.dump_model(best_knn, RSCV_BEST_MODEL_NAME)
+        best_knn = grid_search.best_estimator_
+        utils.dump_model(grid_search, GSCV_BEST_MODEL_NAME)
 
-    print(f"Best hyperparameters found: {rand_search.best_params_}")
-    print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
-    print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
+    print(f"Best hyperparameters found: {grid_search.best_params_}")
+    print(f"Best cross-validation accuracy: {grid_search.best_score_:.4f}")
+    print(f"Accuracy on test set: {grid_search.score(X_test, y_test):.4f}")
 
     # kn_clf_expanded = KNeighborsClf(
     #     X_train_expanded,
