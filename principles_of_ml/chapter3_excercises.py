@@ -72,24 +72,17 @@ def plot_digit(image_data):
 
 
 if __name__ == "__main__":
-    # try:
-    #     print(f"Loading dataset {MNIST_784_DATASET_NAME}")
-    #     minst = utils.load_npz(MNIST_784_DATASET_NAME)
-    #     X = minst["arr_0"]
-    #     y = minst["arr_1"]
-    # except FileNotFoundError:
-    #     print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
-    #     minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
-    #     X = minst.data
-    #     y = minst.target
-    #     utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
-
-    ################### TESTING #########################################################
-    print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
-    minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
-    X = minst.data
-    y = minst.target
-    ############################################################################
+    try:
+        print(f"Loading dataset {MNIST_784_DATASET_NAME}")
+        minst = utils.load_npz(MNIST_784_DATASET_NAME)
+        X = minst["arr_0"]
+        y = minst["arr_1"]
+    except FileNotFoundError:
+        print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
+        minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
+        X = minst.data
+        y = minst.target
+        utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
 
     # The MNIST dataset returned by fetch_openml() is actually already split into
     # a training set (the first 60,000 images) and a test set (the last 10,000 images)
@@ -190,9 +183,9 @@ if __name__ == "__main__":
         best_knn = grid_search.best_estimator_
         utils.dump_model(grid_search, GSCV_BEST_MODEL_NAME)
 
-    print(f"Best hyperparameters found: {grid_search.best_params_}")
-    print(f"Best cross-validation accuracy: {grid_search.best_score_:.4f}")
-    print(f"Accuracy on test set: {grid_search.score(X_test, y_test):.4f}")
+    print(f"Best hyperparameters found: {best_knn.best_params_}")
+    print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
+    print(f"Accuracy on test set: {best_knn.score(X_test, y_test):.4f}")
 
     # kn_clf_expanded = KNeighborsClf(
     #     X_train_expanded,
