@@ -88,32 +88,6 @@ if __name__ == "__main__":
     # a training set (the first 60,000 images) and a test set (the last 10,000 images)
     X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
 
-    # try:
-    #     print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
-    #     data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
-    #     X_train_expanded = data["arr_0"]
-    #     y_train_expanded = data["arr_1"]
-    #     X_test_expanded = data["arr_2"]
-    #     y_test_expanded = data["arr_3"]
-    # except FileNotFoundError:
-    #     print(
-    #         f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
-    #     )
-    #     X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
-    #     X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
-    #     y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
-
-    #     X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
-    #     X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
-    #     y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
-    #     utils.dump_npz(
-    #         SHIFTED_MNIST_784_DATASET_NAME,
-    #         X_train_expanded,
-    #         y_train_expanded,
-    #         X_test_expanded,
-    #         y_test_expanded,
-    #     )
-
     # kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
 
     # try:
@@ -157,7 +131,7 @@ if __name__ == "__main__":
 
 
 
-
+################### Problem 1 ###################
     try:
         print(f"Loading model {GSCV_BEST_MODEL_NAME}")
         best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
@@ -181,16 +155,47 @@ if __name__ == "__main__":
         grid_search.fit(X_train, y_train)
 
         best_knn = grid_search.best_estimator_
-        utils.dump_model(grid_search, GSCV_BEST_MODEL_NAME)
+        utils.dump_model(best_knn, GSCV_BEST_MODEL_NAME)
 
     print(f"Best hyperparameters found: {best_knn.best_params_}")
     print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
     print(f"Accuracy on test set: {best_knn.score(X_test, y_test):.4f}")
 
-    # kn_clf_expanded = KNeighborsClf(
-    #     X_train_expanded,
-    #     y_train_expanded,
-    #     X_test_expanded,
-    #     y_test_expanded,
-    #     KNN_MODEL_NAME_EXPANDED,
-    # )
+
+
+    # # Problem 2
+    try:
+        print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
+        data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
+        X_train_expanded = data["arr_0"]
+        y_train_expanded = data["arr_1"]
+        X_test_expanded = data["arr_2"]
+        y_test_expanded = data["arr_3"]
+    except FileNotFoundError:
+        print(
+            f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
+        )
+        X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
+        X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
+        y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
+        X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
+        X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
+        y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
+        utils.dump_npz(
+            SHIFTED_MNIST_784_DATASET_NAME,
+            X_train_expanded,
+            y_train_expanded,
+            X_test_expanded,
+            y_test_expanded,
+        )
+    try:
+        print(f"Loading model {KNN_MODEL_NAME_EXPANDED}")
+        knn_expanded = utils.load_model(KNN_MODEL_NAME_EXPANDED)
+    except FileNotFoundError:
+        print(f"Model {KNN_MODEL_NAME_EXPANDED} not found. Fitting on all numbers")
+        knn_expanded = KNeighborsClassifier(**best_knn.best_params_)
+        knn_expanded.fit(X_train_expanded, y_train_expanded)
+        utils.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
+    
+    print(f"Training accuracy: {knn_expanded.score(X_train_expanded, y_train_expanded)}")
+    print(f"Test accuracy: {knn_expanded.score(X_test_expanded, y_test_expanded)}")
