@@ -8,6 +8,22 @@ from scipy.stats import loguniform, expon
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from scipy.stats import randint
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+
+
+
+import pandas as pd
+
 import matplotlib.pyplot as plt
 
 from scipy.ndimage import shift
@@ -22,6 +38,8 @@ SHIFTED_MNIST_784_DATASET_NAME = "shifted_mnist_784"
 RAND_SEARCH_CV_MODEL_NAME = "rand_search_cv_minst_c3e"
 RSCV_BEST_MODEL_NAME = "rscv_best_minst_c3e"
 GSCV_BEST_MODEL_NAME = "gscv_best_minst_c3e"
+TITANIC_KNN_MODEL_NAME = "knn_titanic_c3e"
+TITANIC_DT_MODEL_NAME = "dt_titanic_c3e"
 
 
 def shift_pixels(image):
@@ -129,9 +147,7 @@ if __name__ == "__main__":
     # print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
     # print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
 
-
-
-################### Problem 1 ###################
+    ################### Problem 1 ###################
     # try:
     #     print(f"Loading model {GSCV_BEST_MODEL_NAME}")
     #     best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
@@ -160,8 +176,6 @@ if __name__ == "__main__":
     # print(f"Best hyperparameters found: {best_knn.best_params_}")
     # print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
     # print(f"Accuracy on test set: {best_knn.score(X_test, y_test):.4f}")
-
-
 
     # # # Problem 2
     # try:
@@ -196,14 +210,185 @@ if __name__ == "__main__":
     #     knn_expanded = KNeighborsClassifier(**best_knn.best_params_)
     #     knn_expanded.fit(X_train_expanded, y_train_expanded)
     #     utils.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
-    
+
     # print(f"Training accuracy: {knn_expanded.score(X_train_expanded, y_train_expanded)}")
     # print(f"Test accuracy: {knn_expanded.score(X_test_expanded, y_test_expanded)}")
 
-############ Problem 3 ###################
+    ############ Problem 3 ###################
     titanic_train, titanic_test = utils.load_titanic_data()
-    print(f"Training data shape: {titanic_train.shape}")
-    print(f"Training head: {titanic_train.head()}")
-    print(f"Traing collums: {titanic_train.columns}")
-    print(f"Test data shape: {titanic_test.shape}")
-    print(f"Test head: {titanic_test.head()}")
+    # print(f"Training head: \n{titanic_train.head(20)}")
+
+    strat_train_set, strat_test_set = train_test_split(
+        titanic_train,
+        test_size=0.2,
+        random_state=utils.RANDOM_SEED,
+    )
+    X_train = strat_train_set.copy()
+    y_train = strat_train_set["Survived"].copy()
+    X_test = strat_test_set.copy()
+    y_test = strat_test_set["Survived"].copy()
+
+    print(f"Training info: \n{X_train.info()}")
+    print(f"Training head: \n{X_train.head(20)}")
+    print(f"Test info: \n{X_test.info()}")
+    print(f"Test head: \n{X_test.head(20)}")
+    print(X_train.describe())
+
+    women = X_train.loc[X_train.Sex == "female"]["Survived"]
+    rate_women = sum(women) / len(women)
+    print("% of women who survived:", rate_women)
+
+    men = X_train.loc[X_train.Sex == "male"]["Survived"]
+    rate_men = sum(men) / len(men)
+    print("% of men who survived:", rate_men)
+
+    print("Age not NA:\n", X_train.loc[X_train["Age"].notna()])
+    
+    ### Pipeline
+    cat_pipeline = make_pipeline(
+        SimpleImputer(strategy="most_frequent"), OneHotEncoder(handle_unknown="ignore")
+    )
+    num_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
+    default_num_pipeline = make_pipeline(
+        SimpleImputer(strategy="median"), StandardScaler()
+    )
+
+    ### Collumns
+    collumns_to_drop = ["PassengerId", "Name", "Ticket", "Survived", "Cabin"]
+    one_hot_collums = ["Sex", "Embarked"]
+    impute_collums = ["Age"]
+
+    ### Preprocessing
+    preprocessing = ColumnTransformer(
+        [
+            ("imputer", SimpleImputer(strategy="median"), impute_collums),
+            ("collum_dropper", "drop", collumns_to_drop),
+            (
+                "one_hot_encoder",
+                OneHotEncoder(handle_unknown="ignore"),
+                one_hot_collums,
+            ),
+        ]
+    )
+    X_train_prep = preprocessing.fit_transform(X_train)
+    print(f"X train {X_train_prep.shape}")
+    X_test_prep = preprocessing.transform(X_test)
+    print(f"X test {X_test_prep.shape}")
+
+    ### Training pipeline
+    # forest_reg = make_pipeline(
+    #     preprocessing,
+    #     RandomForestRegressor(
+    #         n_estimators=100, random_state=utils.RANDOM_SEED, max_depth=5
+    #     ),
+    # )
+
+    # forest_reg.fit(X_train, y_train)
+    # print(f"Training accuracy: {forest_reg.score(X_train, y_train)}")
+
+    knc = make_pipeline(
+        preprocessing,
+        KNeighborsClassifier(n_neighbors=10, weights="uniform"),
+    )
+
+    knc.fit(X_train, y_train)
+    print(f"Training accuracy: {knc.score(X_train, y_train)}")
+
+    # knc.predict(Y_test, Y_labels)
+    print(f"Original KNeighborsClassifier Test accuracy: {knc.score(X_test, y_test)}")
+
+    try:
+        print(f"Loading model {TITANIC_KNN_MODEL_NAME}")
+        knn_clf = utils.load_model(TITANIC_KNN_MODEL_NAME)
+    except FileNotFoundError:
+        print(f"Model {TITANIC_KNN_MODEL_NAME} not found. Running grid search")
+        param_grid = {
+            "n_neighbors": np.arange(1, 15),
+            "weights": ["uniform", "distance"],
+            "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+            "leaf_size": np.arange(1, 15),
+            "p": np.arange(1, 3),
+        }
+
+        knn_clf = GridSearchCV(
+            KNeighborsClassifier(),
+            param_grid=param_grid,
+            cv=5,
+            n_jobs=20,
+            verbose=3,
+            scoring="accuracy",
+        )
+        knn_clf.fit(X_train_prep, y_train)
+        utils.dump_model(knn_clf, TITANIC_KNN_MODEL_NAME)
+
+    print(f"Best params: {knn_clf.best_params_}")
+    print(f"Best score: {knn_clf.best_score_}")
+
+    print(
+        f"Grid search KNeighborsClassifier training accuracy: {knn_clf.score(X_train_prep, y_train)}"
+    )
+    print(
+        f"Grid search KNeighborsClassifier test accuracy: {knn_clf.score(X_test_prep, y_test)}"
+    )
+
+    try:
+        print(f"Loading model {TITANIC_DT_MODEL_NAME}")
+        dtree = utils.load_model(TITANIC_DT_MODEL_NAME)
+    except FileNotFoundError:
+        print(f"Model {TITANIC_DT_MODEL_NAME} not found. Running grid search")
+        param_grid = {
+            "criterion": ["gini", "entropy"],
+            "max_depth": [3, 5, 7, 10, None],  # None means no limit
+            "min_samples_split": [2, 5, 10],
+            "min_samples_leaf": [1, 2, 4],
+        }
+        dtree = GridSearchCV(
+            DecisionTreeClassifier(),
+            param_grid=param_grid,
+            cv=5,
+            n_jobs=20,
+            verbose=3,
+            scoring="accuracy",
+        )
+        dtree.fit(X_train_prep, y_train)
+        utils.dump_model(dtree, TITANIC_DT_MODEL_NAME)
+
+    print(f"Dtree best params: {dtree.best_params_}")
+    print(f"Dtree best score: {dtree.best_score_}")
+    print(
+        f"DecisionTreeClassifier training accuracy: {dtree.score(X_train_prep, y_train)}"
+    )
+    print(f"DecisionTreeClassifier test accuracy: {dtree.score(X_test_prep, y_test)}")
+
+    titanic_test_prep = preprocessing.transform(titanic_test)
+    predictions = dtree.predict(titanic_test_prep)
+
+    # output = pd.DataFrame({'PassengerId': titanic_test.PassengerId, 'Survived': predictions})
+    # output.to_csv('submission.csv', index=False)
+    # print("Your submission was successfully saved!")
+
+    # forest_rmses = -cross_val_score(
+    #     forest_reg,
+    #     X_train,
+    #     y_train,
+    #     scoring="neg_root_mean_squared_error",
+    #     cv=10,
+    # )
+    # print(f"Mean RMSE: {forest_rmses.mean()}")
+    # print(f"RMSE: {forest_rmses}")
+
+    # forest_accuracy = -cross_val_score(
+    #     forest_reg,
+    #     X_train,
+    #     y_train,
+    #     scoring="accuracy",
+    #     cv=10,
+    # )
+    # print(f"Mean accuracy: {forest_accuracy.mean()}")
+    # print(f"Accuracy: {forest_accuracy}")
+
+    # X_train = preprocessing.fit_transform(X_train)
+    # feature_names = preprocessing.get_feature_names_out()
+    # X_train_transformed = pd.DataFrame(X_train, columns=feature_names)
+    # print(X_train_transformed.describe())
+    # print("Corr:\n", X_train_transformed.corr())
