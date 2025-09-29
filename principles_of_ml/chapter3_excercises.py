@@ -90,21 +90,21 @@ def plot_digit(image_data):
 
 
 if __name__ == "__main__":
-    # try:
-    #     print(f"Loading dataset {MNIST_784_DATASET_NAME}")
-    #     minst = utils.load_npz(MNIST_784_DATASET_NAME)
-    #     X = minst["arr_0"]
-    #     y = minst["arr_1"]
-    # except FileNotFoundError:
-    #     print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
-    #     minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
-    #     X = minst.data
-    #     y = minst.target
-    #     utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
+    try:
+        print(f"Loading dataset {MNIST_784_DATASET_NAME}")
+        minst = utils.load_npz(MNIST_784_DATASET_NAME)
+        X = minst["arr_0"]
+        y = minst["arr_1"]
+    except FileNotFoundError:
+        print(f"Dataset {MNIST_784_DATASET_NAME} not found. Fetching from openml")
+        minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
+        X = minst.data
+        y = minst.target
+        utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
 
     # The MNIST dataset returned by fetch_openml() is actually already split into
     # a training set (the first 60,000 images) and a test set (the last 10,000 images)
-    # X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
+    X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
 
     # kn_clf = KNeighborsClf(X_train, y_train, X_test, y_test, KNN_MODEL_NAME)
 
@@ -143,252 +143,210 @@ if __name__ == "__main__":
 
     #     best_knn = rand_search.best_estimator_
     #     utils.dump_model(best_knn, RSCV_BEST_MODEL_NAME)
-    # print(f"Best hyperparameters found: {rand_search.best_params_}")
-    # print(f"Best cross-validation accuracy: {rand_search.best_score_:.4f}")
-    # print(f"Accuracy on test set: {rand_search.score(X_test, y_test):.4f}")
-
-    ################### Problem 1 ###################
-    # try:
-    #     print(f"Loading model {GSCV_BEST_MODEL_NAME}")
-    #     best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
-    # except FileNotFoundError:
-    #     print(f"Model {GSCV_BEST_MODEL_NAME} not found. Fitting on all numbers")
-    #     knn = KNeighborsClassifier()
-    #     param_grid = {
-    #             "n_neighbors": np.arange(2, 9),
-    #             "weights": ["uniform", "distance"],
-    #             "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
-    #         }
-    #     grid_search = GridSearchCV(
-    #         estimator=knn,
-    #         param_grid=param_grid,
-    #         cv=5,  # Use 5-fold cross-validation
-    #         n_jobs=8,
-    #         scoring="accuracy",
-    #         verbose=3,
-    #     )
-    #     print("Fitting grid_search")
-    #     grid_search.fit(X_train, y_train)
-
-    #     best_knn = grid_search.best_estimator_
-    #     utils.dump_model(best_knn, GSCV_BEST_MODEL_NAME)
-
     # print(f"Best hyperparameters found: {best_knn.best_params_}")
     # print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
     # print(f"Accuracy on test set: {best_knn.score(X_test, y_test):.4f}")
 
-    # # # Problem 2
-    # try:
-    #     print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
-    #     data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
-    #     X_train_expanded = data["arr_0"]
-    #     y_train_expanded = data["arr_1"]
-    #     X_test_expanded = data["arr_2"]
-    #     y_test_expanded = data["arr_3"]
-    # except FileNotFoundError:
-    #     print(
-    #         f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
-    #     )
-    #     X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
-    #     X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
-    #     y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
-    #     X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
-    #     X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
-    #     y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
-    #     utils.dump_npz(
-    #         SHIFTED_MNIST_784_DATASET_NAME,
-    #         X_train_expanded,
-    #         y_train_expanded,
-    #         X_test_expanded,
-    #         y_test_expanded,
-    #     )
-    # try:
-    #     print(f"Loading model {KNN_MODEL_NAME_EXPANDED}")
-    #     knn_expanded = utils.load_model(KNN_MODEL_NAME_EXPANDED)
-    # except FileNotFoundError:
-    #     print(f"Model {KNN_MODEL_NAME_EXPANDED} not found. Fitting on all numbers")
-    #     knn_expanded = KNeighborsClassifier(**best_knn.best_params_)
-    #     knn_expanded.fit(X_train_expanded, y_train_expanded)
-    #     utils.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
+    ################### Problem 1 ###################
+    try:
+        print(f"Loading model {GSCV_BEST_MODEL_NAME}")
+        best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
+    except FileNotFoundError:
+        print(f"Model {GSCV_BEST_MODEL_NAME} not found. Fitting on all numbers")
+        knn = KNeighborsClassifier()
+        param_grid = {
+                "n_neighbors": np.arange(2, 9),
+                "weights": ["uniform", "distance"],
+                "p": [1, 2],  # Test L1 (Manhattan) and L2 (Euclidean) distance metrics
+            }
+        grid_search = GridSearchCV(
+            estimator=knn,
+            param_grid=param_grid,
+            cv=5,  # Use 5-fold cross-validation
+            n_jobs=8,
+            scoring="accuracy",
+            verbose=3,
+        )
+        print("Fitting grid_search")
+        grid_search.fit(X_train, y_train)
 
-    # print(f"Training accuracy: {knn_expanded.score(X_train_expanded, y_train_expanded)}")
-    # print(f"Test accuracy: {knn_expanded.score(X_test_expanded, y_test_expanded)}")
+        best_knn = grid_search.best_estimator_
+        utils.dump_model(best_knn, GSCV_BEST_MODEL_NAME)
+
+    print(f"Best hyperparameters found: {best_knn.best_params_}")
+    print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
+    print(f"Accuracy on test set: {best_knn.score(X_test, y_test):.4f}")
+
+    # # # Problem 2
+    try:
+        print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
+        data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
+        X_train_expanded = data["arr_0"]
+        y_train_expanded = data["arr_1"]
+        X_test_expanded = data["arr_2"]
+        y_test_expanded = data["arr_3"]
+    except FileNotFoundError:
+        print(
+            f"Dataset {SHIFTED_MNIST_784_DATASET_NAME} not found. Creating expanded dataset"
+        )
+        X_extra, y_extra = get_shifted_images_and_labels(X_train, y_train)
+        X_train_expanded = np.concatenate((X_train, X_extra), axis=0)
+        y_train_expanded = np.concatenate((y_train, y_extra), axis=0)
+        X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
+        X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
+        y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
+        utils.dump_npz(
+            SHIFTED_MNIST_784_DATASET_NAME,
+            X_train_expanded,
+            y_train_expanded,
+            X_test_expanded,
+            y_test_expanded,
+        )
+    try:
+        print(f"Loading model {KNN_MODEL_NAME_EXPANDED}")
+        knn_expanded = utils.load_model(KNN_MODEL_NAME_EXPANDED)
+    except FileNotFoundError:
+        print(f"Model {KNN_MODEL_NAME_EXPANDED} not found. Fitting on all numbers")
+        knn_expanded = KNeighborsClassifier(**best_knn.best_params_)
+        knn_expanded.fit(X_train_expanded, y_train_expanded)
+        utils.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
+
+    print(f"Training accuracy: {knn_expanded.score(X_train_expanded, y_train_expanded)}")
+    print(f"Test accuracy: {knn_expanded.score(X_test_expanded, y_test_expanded)}")
 
     ############ Problem 3 ###################
-    titanic_train, titanic_test = utils.load_titanic_data()
-    # print(f"Training head: \n{titanic_train.head(20)}")
+    # titanic_train, titanic_test = utils.load_titanic_data()
+    # # print(f"Training head: \n{titanic_train.head(20)}")
 
-    strat_train_set, strat_test_set = train_test_split(
-        titanic_train,
-        test_size=0.2,
-        random_state=utils.RANDOM_SEED,
-    )
-    X_train = strat_train_set.copy()
-    y_train = strat_train_set["Survived"].copy()
-    X_test = strat_test_set.copy()
-    y_test = strat_test_set["Survived"].copy()
+    # strat_train_set, strat_test_set = train_test_split(
+    #     titanic_train,
+    #     test_size=0.2,
+    #     random_state=utils.RANDOM_SEED,
+    # )
+    # X_train = strat_train_set.copy()
+    # y_train = strat_train_set["Survived"].copy()
+    # X_test = strat_test_set.copy()
+    # y_test = strat_test_set["Survived"].copy()
 
-    print(f"Training info: \n{X_train.info()}")
-    print(f"Training head: \n{X_train.head(20)}")
-    print(f"Test info: \n{X_test.info()}")
-    print(f"Test head: \n{X_test.head(20)}")
-    print(X_train.describe())
+    # print(f"Training info: \n{X_train.info()}")
+    # print(f"Training head: \n{X_train.head(20)}")
+    # print(f"Test info: \n{X_test.info()}")
+    # print(f"Test head: \n{X_test.head(20)}")
+    # print(X_train.describe())
 
-    women = X_train.loc[X_train.Sex == "female"]["Survived"]
-    rate_women = sum(women) / len(women)
-    print("% of women who survived:", rate_women)
+    # women = X_train.loc[X_train.Sex == "female"]["Survived"]
+    # rate_women = sum(women) / len(women)
+    # print("% of women who survived:", rate_women)
 
-    men = X_train.loc[X_train.Sex == "male"]["Survived"]
-    rate_men = sum(men) / len(men)
-    print("% of men who survived:", rate_men)
+    # men = X_train.loc[X_train.Sex == "male"]["Survived"]
+    # rate_men = sum(men) / len(men)
+    # print("% of men who survived:", rate_men)
 
-    print("Age not NA:\n", X_train.loc[X_train["Age"].notna()])
-    
-    ### Pipeline
-    cat_pipeline = make_pipeline(
-        SimpleImputer(strategy="most_frequent"), OneHotEncoder(handle_unknown="ignore")
-    )
-    num_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
-    default_num_pipeline = make_pipeline(
-        SimpleImputer(strategy="median"), StandardScaler()
-    )
+    # print("Age not NA:\n", X_train.loc[X_train["Age"].notna()])
 
-    ### Collumns
-    collumns_to_drop = ["PassengerId", "Name", "Ticket", "Survived", "Cabin"]
-    one_hot_collums = ["Sex", "Embarked"]
-    impute_collums = ["Age"]
+    # ### Pipeline
+    # cat_pipeline = make_pipeline(
+    #     SimpleImputer(strategy="most_frequent"), OneHotEncoder(handle_unknown="ignore")
+    # )
+    # num_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
+    # default_num_pipeline = make_pipeline(
+    #     SimpleImputer(strategy="median"), StandardScaler()
+    # )
 
-    ### Preprocessing
-    preprocessing = ColumnTransformer(
-        [
-            ("imputer", SimpleImputer(strategy="median"), impute_collums),
-            ("collum_dropper", "drop", collumns_to_drop),
-            (
-                "one_hot_encoder",
-                OneHotEncoder(handle_unknown="ignore"),
-                one_hot_collums,
-            ),
-        ]
-    )
-    X_train_prep = preprocessing.fit_transform(X_train)
-    print(f"X train {X_train_prep.shape}")
-    X_test_prep = preprocessing.transform(X_test)
-    print(f"X test {X_test_prep.shape}")
+    # ### Collumns
+    # collumns_to_drop = ["PassengerId", "Name", "Ticket", "Survived", "Cabin"]
+    # one_hot_collums = ["Sex", "Embarked"]
+    # impute_collums = ["Age"]
 
-    ### Training pipeline
-    # forest_reg = make_pipeline(
+    # ### Preprocessing
+    # preprocessing = ColumnTransformer(
+    #     [
+    #         ("imputer", SimpleImputer(strategy="median"), impute_collums),
+    #         ("collum_dropper", "drop", collumns_to_drop),
+    #         (
+    #             "one_hot_encoder",
+    #             OneHotEncoder(handle_unknown="ignore"),
+    #             one_hot_collums,
+    #         ),
+    #     ]
+    # )
+    # X_train_prep = preprocessing.fit_transform(X_train)
+    # print(f"X train {X_train_prep.shape}")
+    # X_test_prep = preprocessing.transform(X_test)
+    # print(f"X test {X_test_prep.shape}")
+
+    # knc = make_pipeline(
     #     preprocessing,
-    #     RandomForestRegressor(
-    #         n_estimators=100, random_state=utils.RANDOM_SEED, max_depth=5
-    #     ),
+    #     KNeighborsClassifier(n_neighbors=10, weights="uniform"),
     # )
 
-    # forest_reg.fit(X_train, y_train)
-    # print(f"Training accuracy: {forest_reg.score(X_train, y_train)}")
+    # knc.fit(X_train, y_train)
+    # print(f"Training accuracy: {knc.score(X_train, y_train)}")
 
-    knc = make_pipeline(
-        preprocessing,
-        KNeighborsClassifier(n_neighbors=10, weights="uniform"),
-    )
+    # print(f"Original KNeighborsClassifier Test accuracy: {knc.score(X_test, y_test)}")
 
-    knc.fit(X_train, y_train)
-    print(f"Training accuracy: {knc.score(X_train, y_train)}")
+    # try:
+    #     print(f"Loading model {TITANIC_KNN_MODEL_NAME}")
+    #     knn_clf = utils.load_model(TITANIC_KNN_MODEL_NAME)
+    # except FileNotFoundError:
+    #     print(f"Model {TITANIC_KNN_MODEL_NAME} not found. Running grid search")
+    #     param_grid = {
+    #         "n_neighbors": np.arange(1, 15),
+    #         "weights": ["uniform", "distance"],
+    #         "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+    #         "leaf_size": np.arange(1, 15),
+    #         "p": np.arange(1, 3),
+    #     }
 
-    # knc.predict(Y_test, Y_labels)
-    print(f"Original KNeighborsClassifier Test accuracy: {knc.score(X_test, y_test)}")
+    #     knn_clf = GridSearchCV(
+    #         KNeighborsClassifier(),
+    #         param_grid=param_grid,
+    #         cv=5,
+    #         n_jobs=20,
+    #         verbose=3,
+    #         scoring="accuracy",
+    #     )
+    #     knn_clf.fit(X_train_prep, y_train)
+    #     utils.dump_model(knn_clf, TITANIC_KNN_MODEL_NAME)
 
-    try:
-        print(f"Loading model {TITANIC_KNN_MODEL_NAME}")
-        knn_clf = utils.load_model(TITANIC_KNN_MODEL_NAME)
-    except FileNotFoundError:
-        print(f"Model {TITANIC_KNN_MODEL_NAME} not found. Running grid search")
-        param_grid = {
-            "n_neighbors": np.arange(1, 15),
-            "weights": ["uniform", "distance"],
-            "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
-            "leaf_size": np.arange(1, 15),
-            "p": np.arange(1, 3),
-        }
+    # print(f"Best params: {knn_clf.best_params_}")
+    # print(f"Best score: {knn_clf.best_score_}")
 
-        knn_clf = GridSearchCV(
-            KNeighborsClassifier(),
-            param_grid=param_grid,
-            cv=5,
-            n_jobs=20,
-            verbose=3,
-            scoring="accuracy",
-        )
-        knn_clf.fit(X_train_prep, y_train)
-        utils.dump_model(knn_clf, TITANIC_KNN_MODEL_NAME)
-
-    print(f"Best params: {knn_clf.best_params_}")
-    print(f"Best score: {knn_clf.best_score_}")
-
-    print(
-        f"Grid search KNeighborsClassifier training accuracy: {knn_clf.score(X_train_prep, y_train)}"
-    )
-    print(
-        f"Grid search KNeighborsClassifier test accuracy: {knn_clf.score(X_test_prep, y_test)}"
-    )
-
-    try:
-        print(f"Loading model {TITANIC_DT_MODEL_NAME}")
-        dtree = utils.load_model(TITANIC_DT_MODEL_NAME)
-    except FileNotFoundError:
-        print(f"Model {TITANIC_DT_MODEL_NAME} not found. Running grid search")
-        param_grid = {
-            "criterion": ["gini", "entropy"],
-            "max_depth": [3, 5, 7, 10, None],  # None means no limit
-            "min_samples_split": [2, 5, 10],
-            "min_samples_leaf": [1, 2, 4],
-        }
-        dtree = GridSearchCV(
-            DecisionTreeClassifier(),
-            param_grid=param_grid,
-            cv=5,
-            n_jobs=20,
-            verbose=3,
-            scoring="accuracy",
-        )
-        dtree.fit(X_train_prep, y_train)
-        utils.dump_model(dtree, TITANIC_DT_MODEL_NAME)
-
-    print(f"Dtree best params: {dtree.best_params_}")
-    print(f"Dtree best score: {dtree.best_score_}")
-    print(
-        f"DecisionTreeClassifier training accuracy: {dtree.score(X_train_prep, y_train)}"
-    )
-    print(f"DecisionTreeClassifier test accuracy: {dtree.score(X_test_prep, y_test)}")
-
-    titanic_test_prep = preprocessing.transform(titanic_test)
-    predictions = dtree.predict(titanic_test_prep)
-
-    # output = pd.DataFrame({'PassengerId': titanic_test.PassengerId, 'Survived': predictions})
-    # output.to_csv('submission.csv', index=False)
-    # print("Your submission was successfully saved!")
-
-    # forest_rmses = -cross_val_score(
-    #     forest_reg,
-    #     X_train,
-    #     y_train,
-    #     scoring="neg_root_mean_squared_error",
-    #     cv=10,
+    # print(
+    #     f"Grid search KNeighborsClassifier training accuracy: {knn_clf.score(X_train_prep, y_train)}"
     # )
-    # print(f"Mean RMSE: {forest_rmses.mean()}")
-    # print(f"RMSE: {forest_rmses}")
-
-    # forest_accuracy = -cross_val_score(
-    #     forest_reg,
-    #     X_train,
-    #     y_train,
-    #     scoring="accuracy",
-    #     cv=10,
+    # print(
+    #     f"Grid search KNeighborsClassifier test accuracy: {knn_clf.score(X_test_prep, y_test)}"
     # )
-    # print(f"Mean accuracy: {forest_accuracy.mean()}")
-    # print(f"Accuracy: {forest_accuracy}")
 
-    # X_train = preprocessing.fit_transform(X_train)
-    # feature_names = preprocessing.get_feature_names_out()
-    # X_train_transformed = pd.DataFrame(X_train, columns=feature_names)
-    # print(X_train_transformed.describe())
-    # print("Corr:\n", X_train_transformed.corr())
+    # try:
+    #     print(f"Loading model {TITANIC_DT_MODEL_NAME}")
+    #     dtree = utils.load_model(TITANIC_DT_MODEL_NAME)
+    # except FileNotFoundError:
+    #     print(f"Model {TITANIC_DT_MODEL_NAME} not found. Running grid search")
+    #     param_grid = {
+    #         "criterion": ["gini", "entropy"],
+    #         "max_depth": [3, 5, 7, 10, None],  # None means no limit
+    #         "min_samples_split": [2, 5, 10],
+    #         "min_samples_leaf": [1, 2, 4],
+    #     }
+    #     dtree = GridSearchCV(
+    #         DecisionTreeClassifier(),
+    #         param_grid=param_grid,
+    #         cv=5,
+    #         n_jobs=20,
+    #         verbose=3,
+    #         scoring="accuracy",
+    #     )
+    #     dtree.fit(X_train_prep, y_train)
+    #     utils.dump_model(dtree, TITANIC_DT_MODEL_NAME)
+
+    # print(f"Dtree best params: {dtree.best_params_}")
+    # print(f"Dtree best score: {dtree.best_score_}")
+    # print(
+    #     f"DecisionTreeClassifier training accuracy: {dtree.score(X_train_prep, y_train)}"
+    # )
+    # print(f"DecisionTreeClassifier test accuracy: {dtree.score(X_test_prep, y_test)}")
+
+    # titanic_test_prep = preprocessing.transform(titanic_test)
+    # predictions = dtree.predict(titanic_test_prep)

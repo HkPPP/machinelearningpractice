@@ -51,8 +51,8 @@ DATASETS_PATH.mkdir(parents=True, exist_ok=True)
 RANDOM_SEED = 42
 
 
-def load_model(model_name):
-    return joblib.load(MODEL_PATH / f"{model_name}.joblib")
+def load_model(model_name, mmap_mode="r"):
+    return joblib.load(MODEL_PATH / f"{model_name}.joblib", mmap_mode=mmap_mode)
 
 
 def dump_model(model, model_name):
