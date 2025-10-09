@@ -55,8 +55,8 @@ def load_model(model_name, mmap_mode="r"):
     return joblib.load(MODEL_PATH / f"{model_name}.joblib", mmap_mode=mmap_mode)
 
 
-def dump_model(model, model_name):
-    joblib.dump(model, MODEL_PATH / f"{model_name}.joblib")
+def dump_model(model, model_name, compress=3):
+    joblib.dump(model, MODEL_PATH / f"{model_name}.joblib", compress=compress)
 
 
 def load_npy(dt_name):
