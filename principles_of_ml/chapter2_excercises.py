@@ -38,7 +38,7 @@ from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint
 
 import numpy as np
-import principles_of_ml.utils as utils
+import principles_of_ml.utils_old as utils_old
 
 RANDOM_SEED = 42
 
@@ -61,7 +61,7 @@ def get_ratio_pipeline():
 
 if __name__ == "__main__":
     #  Downloading the data
-    housing_full = utils.load_housing_data()
+    housing_full = utils_old.load_housing_data()
 
     # Suppose you’ve chatted with some experts who told you
     # that the median income is a very important attribute
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         FunctionTransformer(np.log, feature_names_out="one-to-one"),
         StandardScaler(),
     )
-    cluster_simil = utils.ClusterSimilarity(
+    cluster_simil = utils_old.ClusterSimilarity(
         n_clusters=10, gamma=1.0, random_state=RANDOM_SEED
     )
     default_num_pipeline = make_pipeline(

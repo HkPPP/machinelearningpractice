@@ -27,7 +27,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from scipy.ndimage import shift
-import utils
+import principles_of_ml.utils_old as utils_old
 
 import numpy as np
 
@@ -72,12 +72,12 @@ def KNeighborsClf(
 ):
     try:
         print(f"Loading model {model_name}")
-        kn_clf = utils.load_model(model_name)
+        kn_clf = utils_old.load_model(model_name)
     except FileNotFoundError:
         print(f"Model {model_name} not found. Fitting on all numbers")
         kn_clf = KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights)
         kn_clf.fit(X_train, y_train)
-        utils.dump_model(kn_clf, model_name)
+        utils_old.dump_model(kn_clf, model_name)
 
     print(f"Training accuracy: {kn_clf.score(X_train, y_train)}")
     print(f"Test accuracy: {kn_clf.score(X_test, y_test)}")
@@ -92,7 +92,7 @@ def plot_digit(image_data):
 if __name__ == "__main__":
     try:
         print(f"Loading dataset {MNIST_784_DATASET_NAME}")
-        minst = utils.load_npz(MNIST_784_DATASET_NAME)
+        minst = utils_old.load_npz(MNIST_784_DATASET_NAME)
         X = minst["arr_0"]
         y = minst["arr_1"]
     except FileNotFoundError:
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         minst = fetch_openml(MNIST_784_DATASET_NAME, as_frame=False)
         X = minst.data
         y = minst.target
-        utils.dump_npz(MNIST_784_DATASET_NAME, X, y)
+        utils_old.dump_npz(MNIST_784_DATASET_NAME, X, y)
 
     # The MNIST dataset returned by fetch_openml() is actually already split into
     # a training set (the first 60,000 images) and a test set (the last 10,000 images)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     ################### Problem 1 ###################
     try:
         print(f"Loading model {GSCV_BEST_MODEL_NAME}")
-        best_knn = utils.load_model(GSCV_BEST_MODEL_NAME)
+        best_knn = utils_old.load_model(GSCV_BEST_MODEL_NAME)
     except FileNotFoundError:
         print(f"Model {GSCV_BEST_MODEL_NAME} not found. Fitting on all numbers")
         knn = KNeighborsClassifier()
@@ -171,7 +171,7 @@ if __name__ == "__main__":
         grid_search.fit(X_train, y_train)
 
         best_knn = grid_search.best_estimator_
-        utils.dump_model(best_knn, GSCV_BEST_MODEL_NAME)
+        utils_old.dump_model(best_knn, GSCV_BEST_MODEL_NAME)
 
     print(f"Best hyperparameters found: {best_knn.best_params_}")
     print(f"Best cross-validation accuracy: {best_knn.best_score_:.4f}")
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     # # # Problem 2
     try:
         print(f"Loading model {SHIFTED_MNIST_784_DATASET_NAME}")
-        data = utils.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
+        data = utils_old.load_npz(SHIFTED_MNIST_784_DATASET_NAME)
         X_train_expanded = data["arr_0"]
         y_train_expanded = data["arr_1"]
         X_test_expanded = data["arr_2"]
@@ -195,7 +195,7 @@ if __name__ == "__main__":
         X_extra, y_extra = get_shifted_images_and_labels(X_test, y_test)
         X_test_expanded = np.concatenate((X_test, X_extra), axis=0)
         y_test_expanded = np.concatenate((y_test, y_extra), axis=0)
-        utils.dump_npz(
+        utils_old.dump_npz(
             SHIFTED_MNIST_784_DATASET_NAME,
             X_train_expanded,
             y_train_expanded,
@@ -204,12 +204,12 @@ if __name__ == "__main__":
         )
     try:
         print(f"Loading model {KNN_MODEL_NAME_EXPANDED}")
-        knn_expanded = utils.load_model(KNN_MODEL_NAME_EXPANDED)
+        knn_expanded = utils_old.load_model(KNN_MODEL_NAME_EXPANDED)
     except FileNotFoundError:
         print(f"Model {KNN_MODEL_NAME_EXPANDED} not found. Fitting on all numbers")
         knn_expanded = KNeighborsClassifier(**best_knn.best_params_)
         knn_expanded.fit(X_train_expanded, y_train_expanded)
-        utils.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
+        utils_old.dump_model(knn_expanded, KNN_MODEL_NAME_EXPANDED)
 
     print(f"Training accuracy: {knn_expanded.score(X_train_expanded, y_train_expanded)}")
     print(f"Test accuracy: {knn_expanded.score(X_test_expanded, y_test_expanded)}")
